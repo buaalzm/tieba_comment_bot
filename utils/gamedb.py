@@ -10,7 +10,7 @@ class GameDBService(MySQLService):
         在表中添加评论的url
         """
         table = 't_game_comment_url'
-        if not self.check_exists(table=table,name=name):
+        if not self.check_exists(table=table,field='name',value=name):
             self.insert(table=table,name=name,url=url)
         else:
             print('元素重复：name={},url={}'.format(name,url))
@@ -20,7 +20,7 @@ class GameDBService(MySQLService):
         将句子碎片添加入库
         """
         table = 't_game_sentence'
-        if not self.check_exists(table=table,sentence=sentence) and len(sentence)<255:
+        if not self.check_exists(table=table,field='sentence',value=sentence) and len(sentence)<255:
             self.insert(table=table,name=name,sentence=sentence,len=len(sentence))
         else:
             print('元素重复：name={},sentence={}'.format(name,sentence[:20]))
@@ -31,7 +31,7 @@ class GameDBService(MySQLService):
         """
         table = 't_game_tag'
         assert attitude in ['posi','neg']
-        if not self.check_exists(table=table,name=name,tag=tag):
+        if not self.check_exists(table=table,field='tag',value=tag):
             self.insert(table=table,name=name,tag=tag,attitude=attitude)
         else:
             print('元素重复：name={},tag={},attitude={}'.format(name,tag,attitude))
@@ -41,12 +41,12 @@ class GameDBService(MySQLService):
         评分入库
         params:
         {
-            namep[str]
+            name[str]
             score[str]
         }
         """
         table = 't_game_score'
-        if not self.check_exists(table=table,name=name):
+        if not self.check_exists(table=table,field='name',value=name):
             self.insert(table=table,name=name,score=score)
         else:
             print('元素重复：name={},score={}'.format(name,score))

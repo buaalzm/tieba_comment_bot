@@ -10,12 +10,13 @@ class MySQLService(MySQLBase):
     def __init__(self,host='127.0.0.1',user='root',password='210113',charset='utf8',db='yangmao',port=3306,use_unicode=True):
         super().__init__(host=host,user=user,password=password,charset=charset,db=db,port=port,use_unicode=use_unicode)
     
-    def check_exists(self,table,**kwargs):
-        sql = "select count(1) as cnt from {table} where ".format(table=table)
-        for key in kwargs:
-            sql = sql + key+'='+"'"+kwargs[key]+"'"+' and '
+    def check_exists(self,table,field,value):
+        # sql = "select count(1) as cnt from {table} where ".format(table=table)
+        # for key in kwargs:
+        #     sql = sql + key+'='+"'"+kwargs[key]+"'"+' and '
+        # sql = sql[:-4]
+        sql = "select count(1) as cnt from {table} where '{field}' = '{value}'".format(table=table,field=field,value=value)
         # print(sql)
-        sql = sql[:-4]
         self.cursor.execute(sql)
         ret = self.cursor.fetchall()
         if ret[0][0] != 0:
@@ -116,4 +117,7 @@ if __name__ == "__main__":
     # ce.check_exists(table='t_phone_comment_url',field='name',value='苹果x')
     # print(ce.select(table='t_phone_comment_url',field='name'))
     # print(ce.select(table='t_phone_comment_url',field=['id','name']))
-    ce.update_id('t_phone_comment_url')
+    ce.update_id('t_game_sentence')
+    ce.update_id('t_game_comment_url')
+    ce.update_id('t_game_score')
+    ce.update_id('t_game_tag')

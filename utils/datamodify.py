@@ -16,7 +16,11 @@ class DataModify(MySQLService):
         table = 't_game_sentence'
         try:
             sen_old = sentence
-            s =re.sub(r'^(([\s]*[\d]*[\.,，、:：-])[\s\d]*)|^(但[是]?|另外|比如|而且|其次|于是|毕竟|终于|所以|总而言之|其他|还有[的]?|不过|ps:|[最然]后|[第]*[一二三四五])|^[\)），,①②③④⑤⑥◆\|"]','',sen_old)
+            pattern = r'^(([\s]*[\d]*[\.,，、:：-])[\s\d]*)|^(但[是]?|另外|比如|而且|其次|于是|毕竟|终于|所以|总而言之|其他|还有[的]?|不过|ps:|[最然]后|[第]*[一二三四五])|^[\)），,①②③④⑤⑥◆\|"]'
+            s = re.sub(pattern,'',sen_old)
+            temp = re.sub(pattern,'',s)
+            while s!=temp:
+                s = temp
             if sen_old!=s:
                 # 有改动，update
                 sql = "UPDATE {table} SET sentence='{sen_new}',len={len} WHERE sentence='{sen_old}';".format(table=table,sen_new=s,len=len(s),sen_old=sen_old)
@@ -66,6 +70,6 @@ class DataModify(MySQLService):
 
 if __name__ == "__main__":
     dm = DataModify()
-    # dm.sentence_process()
+    dm.sentence_process()
     # dm.update_id(table='t_game_sentence')
     dm.tag_replace(tag_old_list=['优化相关'],tag_new_list=['优化不足'])

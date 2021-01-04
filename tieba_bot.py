@@ -18,7 +18,9 @@ class TiebaBot():
             item_type[str]:为'game'或'phone'
         }
         """
-        self.d = u2.connect_usb(device)
+        # self.d = u2.connect_usb(device)
+        self.wait_until_connect(device=device)
+        self.tieba_init()
         print(self.d.device_info)
         self.device = self.d.device_info['serial']
         self.type = item_type
@@ -35,6 +37,41 @@ class TiebaBot():
             self.device_type = 'simulator'
         if device == 'CUY0219618008985':
             self.device_type = 'honor20'
+
+    def wait_until_connect(self,device,max_try=20):
+        """
+        一直尝试连接设备，连上为止
+        """
+        succ = False
+        count = 0
+        while not succ:
+            try:
+                self.d = u2.connect_usb(device)
+                succ = True
+            except:
+                count +=1
+                print('连接尝试第{}次，剩余{}次'.format(count,max_try-count))
+                if count==max_try:
+                    exit()
+                time.sleep(5)
+
+    def tieba_init(self):
+        while not self.d(resourceId="com.baidu.tieba:id/home_et_search").exists():
+            if self.d(resourceId="com.baidu.tieba:id/cancel_download_button").exists():
+                self.d(resourceId="com.baidu.tieba:id/cancel_download_button").click()
+                time.sleep(0.5)
+                continue
+            if self.d(resourceId="com.baidu.tieba:id/search").exists():
+                self.d(resourceId="com.baidu.tieba:id/search").click()
+                time.sleep(0.5)
+                continue
+            if self.d(text="谷歌安装器").exists():
+                self.d.app_start("com.baidu.tieba")
+                time.sleep(5)
+            if self.d(text="系统删贴").exists():
+                return
+
+        
     
     def action(self,subject,comment,star):
         """
@@ -50,7 +87,7 @@ class TiebaBot():
             # 贴吧不存在
             self.log(subject,'没有出现补全的搜索项,点击灰叉，准备下一次搜索')
             self.prepare_next() # 点击灰叉，准备下一次搜索
-            return
+            return False
         
         self.d(resourceId="com.baidu.tieba:id/searchSuggestTitle").click() # 点击补全的项，进入贴吧
         time.sleep(5)
@@ -68,7 +105,7 @@ class TiebaBot():
             # 没有评价入口
             self.log(subject,'没找到评价入口,点击灰叉，准备下一次搜索')
             self.prepare_next()
-            return
+            return False
         self.d.xpath('//*[@text="评价"]').click() # 开始评价
         time.sleep(1)
         # self.d(resourceId="com.baidu.tieba:id/evaluate_container").click()
@@ -81,6 +118,7 @@ class TiebaBot():
 
         time.sleep(0.5)
         self.share()
+        time.sleep(0.5)
         url = self.d.clipboard
         assert url != None
         print('url:{}'.format(url))
@@ -90,6 +128,7 @@ class TiebaBot():
         time.sleep(0.5)
         self.d(resourceId="com.baidu.tieba:id/home_bt_search_del").click() # 点击灰叉，准备下一次搜索
         time.sleep(0.5)
+        return True
 
     def put_comment(self, subject,comment,star=5):
         """
@@ -106,7 +145,7 @@ class TiebaBot():
         self.log(subject,'{}星'.format(str(star)))
         self.log(subject,comment)
         self.d(resourceId="com.baidu.tieba:id/post_content").set_text(comment) # 添加评论内容
-        time.sleep(0.5)
+        time.sleep(5)
         self.d(text="发布").click() # 评价
         time.sleep(0.5)
         while self.d(text="发布").exists():
@@ -199,6 +238,10 @@ class TiebaBot():
         点飞的时候，试图找回去，回到搜索界面
         """
         while True:
+            if self.d(text='谷歌安装器').exists(): 
+                self.log("寻路程序",'回到了桌面')
+                self.d.app_start('com.baidu.tieba')
+                time.sleep(1)
             if self.d(resourceId="com.baidu.tieba:id/search").exists():
                 self.log('寻路程序','已回到首页')
                 self.d(resourceId="com.baidu.tieba:id/search").click()
@@ -212,10 +255,10 @@ class TiebaBot():
             if self.d(text='不保存').exists(): 
                 self.log("寻路程序",'不保存')
                 self.d(text='不保存').click() 
+                time.sleep(0.5)
             if self.d(text='知道啦').exists(): 
                 self.log("寻路程序",'知道啦')
                 self.d(text='知道啦').click() 
-            
                 time.sleep(1)
             self.d.press("back")
             self.log('寻路程序','点击返回')
@@ -250,6 +293,33 @@ class TiebaBot():
     def _in_verify_code_page(self):
         time.sleep(0.5)
         return self.d(text='点击验证码图片换一张').exists()
+
+    def recover_comment(self,max_count=10):
+        """
+        申诉被删的帖
+        在帖子回收站启动
+        """
+        count = 0
+        while self.d(text='申请恢复').exists() or not self.d(text='暂无更多').exists():
+            # 跳出的条件：刷到“暂无更多”（到底了） and 没有“申请恢复”
+            if not self.d(text='申请恢复').exists():
+               self.d.swipe(0.532, 0.609, 0.513, 0.271) # 往下滑动
+               continue
+            time.sleep(0.5)
+            self.d(text='申请恢复').click()
+            time.sleep(1.5)
+            
+            self.d(resourceId='reason').click()
+            self.d.send_keys('参加贴吧百万内容活动，被系统误封。。')
+            time.sleep(1)
+            self.d(resourceId='apply').click()
+            time.sleep(1)
+            
+            time.sleep(1)
+            count+=1
+            if count == max_count:
+                break
+        print('申请数量:{}'.format(count))
 
 
 if __name__ == "__main__":

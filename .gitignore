@@ -2,4 +2,13 @@ __pycache__/
 .vscode/
 log/
 out/
+img/
 *.jpg
+build/
+dist/
+*.ico
+*.spec
+*.txt
+*.log
+backup/
+submit/

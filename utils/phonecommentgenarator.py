@@ -6,7 +6,7 @@ import sys
 sys.path.append(os.path.dirname(__file__))
 
 from mysqlservice import MySQLService
-from random import sample,shuffle,seed
+from random import sample,shuffle,seed,randint
 
 
 class PhoneCommentGenerator():
@@ -34,7 +34,16 @@ class PhoneCommentGenerator():
         other_list = [item['other'] for item in comment if item['other']]
         # print(len(like_list),len(dislike_list),len(appearance_list),len(performance_list),len(fluency_list),len(camera_list),len(other_list))
 
-        comment = name + '这款手机，'
+        pc_list = ['戴尔g3']
+        pad_list = ['ipad2018','ipadmini2','ipadmini3','小米平板']
+
+        if name in pc_list:
+            comment = name + '这款电脑，'
+        if name in pad_list:
+            comment = name + '这款平板，'
+        else:
+            comment = name + '这款手机，'
+            
         if like_list:
             comment = comment + PhoneCommentGenerator.sample_one(['总体来说','给我的总体印象是']) + PhoneCommentGenerator.sample_one(like_list)+'。'
         if dislike_list:
@@ -52,7 +61,8 @@ class PhoneCommentGenerator():
         if camera_list:
             comment_list.append('拍照方面，'+PhoneCommentGenerator.sample_one(camera_list))
 
-        shuffle(comment_list)
+        # shuffle(comment_list)
+        comment_list = sample(comment_list,randint(min(2,len(comment_list)),len(comment_list)))
         comment = comment + ''.join(comment_list) + '\n'
         if other_list and len(comment)<500:
             comment = comment + PhoneCommentGenerator.sample_one(other_list)
@@ -77,5 +87,5 @@ class PhoneCommentGenerator():
 if __name__ == "__main__":
     c = PhoneCommentGenerator()
     seed()
-    # print(c.gen_one_comment(name='小米8'))
-    print(c.get_star('荣耀9'))
+    print(c.gen_one_comment(name='小米8'))
+    # print(c.get_star('荣耀9'))

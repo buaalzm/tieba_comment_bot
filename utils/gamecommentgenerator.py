@@ -63,7 +63,7 @@ class GameCommentGenerator():
             summary_comment = summary_comment[:-1]+'的游戏。' # 去掉逗号
             if neg_list:
                 summary_comment+=sample(['就是有点','美中不足的是','就是','缺点是'],1)[0]
-            for item in neg_list:
+            for item in sample(neg_list,min(randint(2,5),len(neg_list))):
                 summary_comment+=item+','
             summary_comment = summary_comment[:-1] + '。'
         

@@ -45,6 +45,7 @@ class GameCommentFactory():
         self.driver.get('https://www.taptap.com/search/{}'.format(subject))
         # 解析出评论的链接
         comment_css_str = '#js-nav-sidebar-main > div > div > div > div.search-page.search-web-content > div > div.van-tabs__content > div:nth-child(1) > div > div > div:nth-child(1) > div > div:nth-child(2) > div.game-search-item__labels.van-hairline--bottom > div:nth-child(1) > a'
+        
         try:
             WebDriverWait(self.driver, 5).until(EC.presence_of_element_located((By.CSS_SELECTOR, '#js-nav-sidebar-main > div > div > div > div.search-page.search-web-content > div > div.van-tabs__content > div:nth-child(1)')))
             WebDriverWait(self.driver, 2).until(EC.presence_of_element_located((By.CSS_SELECTOR, comment_css_str)))
@@ -194,8 +195,8 @@ if __name__ == "__main__":
     fl = FileLoader()
     fl.loadfile('game.txt')
     namelist = fl.get_name_list()
-    m = MultiGMF(num=4)
+    m = MultiGMF(num=12)
     m.start(namelist)
-    m.save()
+    # m.save()
 
     
